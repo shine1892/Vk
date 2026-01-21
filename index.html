@@ -2,135 +2,311 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="unsafe-url">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Precision Search Dashboard</title>
+    <title>Ultimate Research | Secure Access</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- THEME --- */
-        :root { --primary: #00ff88; --secondary: #00ccff; --bg-color: #050505; --card-bg: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.1); }
+        /* --- CORE THEME (Your Design Language) --- */
+        :root { --primary: #00ff88; --secondary: #00ccff; --bg-color: #050505; --card-bg: rgba(20, 20, 20, 0.95); --border: rgba(255, 255, 255, 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
         body { 
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at 10% 20%, rgba(0, 255, 136, 0.05) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(0, 204, 255, 0.05) 0%, transparent 40%);
-            color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 15px; 
+            color: #fff; min-height: 100vh; overflow-x: hidden;
         }
 
-        .dashboard { width: 100%; max-width: 500px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 15px; }
+        /* --- LOGIN OVERLAY (The Security Gate) --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            backdrop-filter: blur(10px);
+        }
+        .login-card {
+            background: rgba(10, 10, 10, 0.9); border: 1px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            padding: 40px; border-radius: 20px; text-align: center; max-width: 350px; width: 90%;
+        }
+        .login-title { font-size: 20px; font-weight: 700; color: white; margin-bottom: 20px; letter-spacing: 1px; }
+        .login-title span { color: var(--primary); }
+        .key-input {
+            width: 100%; background: #111; border: 1px solid #333; color: var(--primary);
+            padding: 15px; border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+            text-align: center; font-size: 14px; margin-bottom: 20px; outline: none;
+            transition: 0.3s;
+        }
+        .key-input:focus { border-color: var(--secondary); box-shadow: 0 0 10px rgba(0, 204, 255, 0.2); }
+        .login-btn {
+            width: 100%; padding: 15px; background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border: none; border-radius: 8px; color: #000; font-weight: 700; cursor: pointer;
+            font-size: 16px; transition: transform 0.2s;
+        }
+        .login-btn:active { transform: scale(0.95); }
+        .login-status { margin-top: 15px; font-size: 12px; color: #666; font-family: 'JetBrains Mono', monospace; min-height: 20px; }
+
+        /* --- MAIN APP (Hidden Initially) --- */
+        #app-container {
+            display: none; /* Hidden until login */
+            width: 100%; min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 15px;
+        }
+
+        /* --- YOUR ORIGINAL STYLES --- */
+        .dashboard { 
+            width: 100%; max-width: 500px; background: var(--card-bg); border: 1px solid var(--border); 
+            border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+            display: flex; flex-direction: column; gap: 15px; 
+        }
         header h1 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 5px; }
         header span { background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* Fake Browser */
         .fake-browser { background: #000; border: 1px solid #333; border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        .search-icon { color: #555; margin-right: 12px; font-size: 20px; }
         .typing-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--primary); white-space: nowrap; overflow: hidden; width: 100%; }
-
-        /* Controls */
         .control-group { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-        input, select { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; outline: none; font-size: 14px; }
-        input:focus, select:focus { border-color: var(--primary); }
+        input, select, textarea { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; outline: none; font-size: 14px; text-align: center; resize: none; }
+        input[type="text"], textarea { text-align: left; }
+        textarea { height: 80px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
         .topic-input { color: var(--secondary) !important; font-weight: 600; }
         .settings-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .setting-item label { display: block; font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
-        .setting-item input { text-align: center; }
-
-        /* Status */
         .status-container { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid #222; }
         .progress-bar { height: 4px; background: #222; border-radius: 2px; margin-bottom: 8px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; transition: width 0.3s; }
         .status-text { font-size: 11px; color: #bbb; font-family: 'JetBrains Mono', monospace; min-height: 16px; }
-
-        /* Buttons */
         .btn-large { width: 100%; padding: 16px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #000; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s; }
         .btn-large:active { transform: scale(0.98); }
-        .btn-stop { background: #ff4444; color: white; display: none; }
-        
+        .btn-row { display: flex; gap: 10px; }
+        .btn-small { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; border-radius: 8px; cursor: pointer; font-size: 13px; }
         .btn-indian { width: 100%; padding: 12px; background: transparent; border: 1px dashed #555; color: #888; border-radius: 8px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
         .btn-indian.active { background: linear-gradient(90deg, #ff993333, #ffffff33, #13880833); border: 1px solid #138808; color: #fff; font-weight: bold; }
-
         #warning { display: none; background: #331111; color: #ff6666; padding: 10px; font-size: 11px; border-radius: 8px; border: 1px solid #ff4444; text-align: center; margin-bottom: 10px; }
+        @media (max-width: 400px) { .settings-row { grid-template-columns: 1fr 1fr; } .setting-item:last-child { grid-column: span 2; } }
     </style>
 </head>
 <body>
 
-    <div class="dashboard">
-        <header><h1>Research<span>Pro</span></h1></header>
-
-        <div id="warning">⚠️ <strong>Popup Blocked:</strong> Please Allow Popups in your address bar.</div>
-
-        <div class="fake-browser">
-            <div class="typing-text" id="typing-area">System Idle...</div>
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-title">SECURE<span>ACCESS</span></div>
+            <input type="text" id="accessKey" class="key-input" placeholder="PASTE LICENSE KEY">
+            <button class="login-btn" onclick="securityCheck()">UNLOCK SYSTEM</button>
+            <div id="login-status" class="login-status">Awaiting Input...</div>
         </div>
+    </div>
 
-        <div class="control-group">
-            <input type="text" class="topic-input" id="topic" placeholder="Enter Topic (e.g. iPhone 16)">
-            <select id="category">
-                <option value="general">Category: General / Random</option>
-                <option value="movies">Category: Movies & TV</option>
-                <option value="tech">Category: Tech & Gadgets</option>
-                <option value="gaming">Category: Gaming</option>
-                <option value="finance">Category: Finance & Stocks</option>
-                <option value="health">Category: Health & Fitness</option>
-            </select>
+    <div id="app-container" style="display:none;">
+        <div class="dashboard">
+            <header><h1>Research<span>Pro</span></h1></header>
 
-            <div class="settings-row">
-                <div class="setting-item">
-                    <label>Limit</label>
-                    <input type="number" id="limit" value="35">
-                </div>
-                <div class="setting-item">
-                    <label>Min Sec</label>
-                    <input type="number" id="min" value="5">
-                </div>
-                <div class="setting-item">
-                    <label>Max Sec</label>
-                    <input type="number" id="max" value="10">
+            <div id="warning">⚠️ <strong>Popup Blocked:</strong> Please Allow Popups in your address bar.</div>
+
+            <div class="fake-browser">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <div class="typing-text" id="typing-area">System Idle...</div>
+            </div>
+
+            <div class="control-group">
+                <input type="text" class="topic-input" id="topic" placeholder="Enter Topic (e.g. iPhone 16)">
+                
+                <textarea id="custom-queries" placeholder="Paste Custom Queries Here (Separated by comma)
+Example: Avatar 2, Best Pizza, Weather Today"></textarea>
+
+                <select id="category">
+                    <option value="general">Category: General / Random</option>
+                    <option value="movies">Category: Movies & TV</option>
+                    <option value="tech">Category: Tech & Gadgets</option>
+                    <option value="gaming">Category: Gaming</option>
+                    <option value="finance">Category: Finance & Stocks</option>
+                    <option value="health">Category: Health & Fitness</option>
+                </select>
+
+                <div class="settings-row">
+                    <div class="setting-item">
+                        <label>Limit</label>
+                        <input type="number" id="limit" value="35">
+                    </div>
+                    <div class="setting-item">
+                        <label>Min Sec</label>
+                        <input type="number" id="min" value="10">
+                    </div>
+                    <div class="setting-item">
+                        <label>Max Sec</label>
+                        <input type="number" id="max" value="20">
+                    </div>
                 </div>
             </div>
+
+            <div class="status-container">
+                <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+                <div class="status-text" id="status">Ready to Start</div>
+            </div>
+
+            <button class="btn-large" id="start-btn">
+                <span class="material-symbols-outlined">play_arrow</span> START AUTOMATION
+            </button>
+
+            <div class="btn-row">
+                <button class="btn-small" onclick="window.location.href=window.location.pathname">STOP / RESET</button>
+            </div>
+
+            <button class="btn-indian" id="indian-btn">
+                <img src="https://flagcdn.com/w40/in.png" style="height:12px"> INDIAN SEARCH MODE: OFF
+            </button>
         </div>
-
-        <div class="status-container">
-            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-            <div class="status-text" id="status">Ready to Start</div>
-        </div>
-
-        <button class="btn-large" id="start-btn">START AUTOMATION</button>
-        <button class="btn-large btn-stop" id="stop-btn">STOP & RESET</button>
-
-        <button class="btn-indian" id="indian-btn">
-            <img src="https://flagcdn.com/w40/in.png" style="height:12px"> INDIAN SEARCH MODE: OFF
-        </button>
     </div>
 
     <script>
-        // --- DATASETS (100+ Words) ---
-        const dictionary = {
-            movies: ["trailer","cast","review","release date","ending explained","box office","wiki","poster","tickets","director","sequel","plot","rating","rotten tomatoes","imdb","streaming","netflix","hulu","prime video","watch online","download","4k","soundtrack","filming locations","budget","easter eggs","fan theories","deleted scenes","bloopers","timeline","villain","hero","quotes","memes","wallpaper","merchandise","steelbook","pre order","showtimes","imax","dolby","runtime","parental guide","awards","oscars","red carpet","interview","cameos","post credit scene","analysis","video essay","script","concept art","vfx","stunts","costumes","flop","blockbuster","indie","short film","documentary","biopic","animated","remake","reboot","spinoff","crossover","universe","franchise","trilogy","saga","anthology","season 2","episode 1","finale"],
-            tech: ["specs","price","review","vs","battery life","camera test","release date","unboxing","features","manual","issues","bugs","fix","screen replacement","battery cost","teardown","durability","water test","drop test","colors","storage","ram","processor","benchmark","gaming test","overheating","charging speed","wireless","case","cover","screen protector","best buy","amazon","sale","discount","trade in","warranty","service center","drivers","firmware","update","software","hardware","cpu","gpu","ssd","monitor","keyboard","mouse","headset","earbuds","smartwatch","router","5g","wifi 7","usb c","thunderbolt","bluetooth","setup guide","tips and tricks","hidden features"],
-            gaming: ["gameplay","walkthrough","guide","wiki","tips","cheats","mods","hacks","glitches","speedrun","world record","achievements","trophies","collectibles","secrets","lore","ending","boss fight","best weapons","build","tier list","meta","patch notes","update","dlc","season pass","skins","loot","server status","ping","fps boost","optimization","requirements","download","install","size","steam","epic","xbox","ps5","switch","controller","settings","sensitivity","crosshair","graphics","ray tracing","esports","tournament","twitch","discord","reviews","release date","beta","early access"],
-            finance: ["stock price","market cap","chart","forecast","prediction","buy or sell","rating","news","earnings","revenue","profit","report","balance sheet","debt","dividends","yield","payout","split","buyback","ipo","listing","competitors","industry","sector","index","sp500","crypto","bitcoin","ethereum","bull run","bear market","crash","recession","inflation","rates","taxes","trading","investing","portfolio","broker","fees","account","scam","sec filing","insider","ceo","salary","jobs","hiring","careers","analysis","technical","fundamental"],
-            health: ["symptoms","causes","treatment","cure","medicine","side effects","dosage","precautions","warnings","interactions","benefits","risks","diagnosis","test","cost","insurance","hospital","doctor","appointment","natural","herbal","yoga","exercise","diet","nutrition","vitamins","supplements","calories","weight loss","bmi","calculator","guidelines","research","statistics","news","pandemic","virus","infection","pain","relief","recovery","rehab","mental health","anxiety","depression","sleep","energy","immunity","skin","hair"],
-            general: ["news","latest","images","video","wiki","biography","age","net worth","family","history","facts","trivia","quiz","meaning","definition","synonyms","translate","examples","types","list","top 10","best","ranking","comparison","difference","guide","how to","diy","ideas","design","trends","popular","viral","meme","joke","quotes","lyrics","song","book","app","login","contact","address","phone","map","directions","reviews","ratings"]
+        // ==========================================
+        //  🔒 SECURITY & ADMIN CONFIGURATION
+        // ==========================================
+        
+        // 1. YOUR ADMIN PASSWORD (MUST MATCH ADMIN PANEL)
+        const SECRET_PASS = "HARI_SUPER_SECRET_2026"; 
+
+        // 2. DAILY RESET SWITCH (CHANGE THIS TO RESET LOGINS)
+        // Example: Change "DEPLOY_01" to "DEPLOY_02" tomorrow.
+        const DEPLOYMENT_ID = "DEPLOY_01"; 
+
+        // ==========================================
+
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        const loginStatus = document.getElementById('login-status');
+        const loginBtn = document.querySelector('.login-btn');
+
+        // --- AUTO-LOGIN CHECK ---
+        // Checks if user is already logged in for THIS specific Deployment ID
+        window.onload = function() {
+            const savedKey = localStorage.getItem("u_key");
+            const savedDeploy = localStorage.getItem("u_deploy");
+            
+            if (savedKey && savedDeploy === DEPLOYMENT_ID) {
+                // Already Verified for this specific deployment
+                unlockApp(true);
+            }
         };
 
-        const indianSuffixes = ["price in India","news India","hindi dubbed","box office India","flipkart","amazon india","jio","cricket","ipl","bollywood","bangalore","delhi","mumbai"];
+        async function securityCheck() {
+            const key = document.getElementById('accessKey').value.trim();
+            if(!key) {
+                loginStatus.innerText = "Please enter a key.";
+                return;
+            }
 
-        // --- ENGINE LOGIC ---
-        const params = new URLSearchParams(window.location.search);
-        const isRunning = params.get('run') === '1';
-        const currentCount = parseInt(params.get('c')) || 0;
+            loginStatus.style.color = "#00ccff";
+            loginStatus.innerText = "Verifying Signature...";
+            loginBtn.disabled = true;
+            loginBtn.style.opacity = "0.7";
+
+            try {
+                // 1. DECODE KEY (Base64)
+                const decoded = atob(key); 
+                const parts = decoded.split('|'); 
+                // Expecting: [User, Limit, Expiry, Signature]
+                
+                if (parts.length !== 4) throw new Error("Invalid Key Format");
+                const [uid, devLimit, expiry, signature] = parts;
+
+                // 2. VERIFY MATH (SIGNATURE)
+                let hash = 0;
+                const stringToHash = `${uid}|${devLimit}|${expiry}` + SECRET_PASS;
+                for (let i = 0; i < stringToHash.length; i++) {
+                    const char = stringToHash.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+
+                if (hash != signature) throw new Error("Key Integrity Failed. (Fake Key)");
+
+                // 3. CHECK SUBSCRIPTION DATE
+                if (Date.now() > parseInt(expiry)) throw new Error("Subscription Expired.");
+
+                // 4. CHECK PUBLIC DEVICE COUNTER (API)
+                loginStatus.innerText = "Checking Device Limit...";
+                
+                // Unique Counter ID = DeploymentID + UserID
+                // If you change DeploymentID, this ID changes, resetting the count.
+                const counterNamespace = "research_pro_auth_v1"; // Public Namespace
+                const counterKey = `${DEPLOYMENT_ID}_${uid}`;
+
+                // Using countapi.xyz (Free Public Counter)
+                const response = await fetch(`https://api.countapi.xyz/hit/${counterNamespace}/${counterKey}`);
+                const data = await response.json();
+                const currentUsage = data.value;
+
+                if (currentUsage > parseInt(devLimit)) {
+                    throw new Error(`Device Limit Reached! (${currentUsage}/${devLimit} devices used today)`);
+                }
+
+                // 5. SUCCESS
+                localStorage.setItem("u_key", key);
+                localStorage.setItem("u_deploy", DEPLOYMENT_ID);
+                
+                loginStatus.style.color = "#00ff88";
+                loginStatus.innerText = `Access Granted. (${currentUsage}/${devLimit} Used)`;
+                
+                setTimeout(() => unlockApp(false), 1000);
+
+            } catch (e) {
+                loginStatus.style.color = "#ff4444";
+                loginStatus.innerText = e.message;
+                loginBtn.disabled = false;
+                loginBtn.style.opacity = "1";
+            }
+        }
+
+        function unlockApp(isAuto) {
+            loginScreen.style.transition = "opacity 0.5s";
+            loginScreen.style.opacity = "0";
+            setTimeout(() => {
+                loginScreen.style.display = "none";
+                appContainer.style.display = "flex"; // Changed to flex to center it
+                
+                // Only run engine if param exists (Original Logic)
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('run') === '1') {
+                    runEngine();
+                }
+            }, 500);
+        }
+
+        // ==========================================
+        //  YOUR ORIGINAL APP LOGIC (PRESERVED)
+        // ==========================================
         
-        // --- PRECISE VALUES (No Defaults/Tuning) ---
+        const dictionary = {
+            movies: ["trailer", "cast", "release date", "review", "ending explained", "box office", "rating", "wiki", "poster", "tickets", "director", "sequel", "behind the scenes", "interviews", "plot summary", "rotten tomatoes", "imdb rating", "metacritic", "full movie", "streaming", "netflix", "prime video", "hulu", "disney plus", "watch online", "download", "blu ray", "4k release", "soundtrack", "filming locations", "production budget", "fan theories", "easter eggs", "deleted scenes", "bloopers", "timeline", "canon", "characters", "villain", "hero", "best scenes", "quotes", "memes", "wallpaper", "merchandise", "action figure", "steelbook", "collector edition", "pre order", "showtimes", "near me", "imax", "3d glasses", "dolby cinema", "popcorn bucket", "runtime", "age rating", "parental guide", "awards", "oscars", "golden globes", "cannes", "premiere", "red carpet", "actor instagram", "actress interview", "cameos", "post credit scene", "mid credit scene", "is it worth watching", "spoiler free review", "reaction video", "analysis", "video essay", "script pdf", "concept art", "visual effects", "cgi breakdown", "stunts", "costume design", "makeup transformation", "box office flop", "blockbuster", "indie movie", "short film", "documentary", "biopic", "animated", "live action", "remake", "reboot", "spinoff", "crossover", "universe", "franchise", "trilogy", "saga", "anthology", "series", "season 2"],
+            tech: ["specs", "price", "review", "vs iphone", "vs samsung", "battery life", "camera test", "release date", "unboxing", "features", "manual", "issues", "bugs", "glitch", "fix", "troubleshoot", "screen replacement", "battery replacement", "repair cost", "teardown", "durability test", "water test", "drop test", "bend test", "scratch test", "colors", "storage options", "ram", "processor", "benchmark", "antutu", "geekbench", "gaming test", "pubg test", "fps test", "overheating", "charging speed", "wireless charging", "fast charger", "cable", "case", "cover", "screen protector", "tempered glass", "skin", "accessories", "best buy", "amazon", "flipkart", "sale", "discount", "coupon", "black friday", "cyber monday", "student discount", "trade in", "exchange offer", "emi", "warranty", "customer care", "service center", "official website", "forum", "reddit", "xda", "drivers", "firmware", "update", "android 15", "ios 18", "windows 12", "macos", "linux", "ubuntu", "software", "hardware", "cpu", "gpu", "motherboard", "ssd", "hdd", "monitor", "keyboard", "mouse", "headset", "earbuds", "smartwatch", "fitness tracker", "router", "modem", "5g bands", "wifi 7", "bluetooth 6", "usb c", "thunderbolt"],
+            gaming: ["gameplay", "walkthrough", "guide", "wiki", "tips", "tricks", "cheats", "mods", "hacks", "glitches", "speedrun", "world record", "high score", "achievements", "trophies", "platinum guide", "100% completion", "collectibles", "hidden items", "easter eggs", "secrets", "lore", "story explained", "ending", "boss fight", "best weapons", "best build", "tier list", "meta", "patch notes", "update", "dlc", "expansion", "season pass", "battle pass", "skins", "cosmetics", "loot boxes", "microtransactions", "free to play", "pay to win", "server status", "ping", "lag fix", "fps boost", "optimization", "system requirements", "pc specs", "can i run it", "download", "install", "size", "gb", "steam", "epic games", "gog", "origin", "uplay", "xbox game pass", "ps plus", "nintendo switch", "ps5", "xbox series x", "controller", "keyboard mouse", "settings", "sensitivity", "crosshair", "fov", "resolution", "graphics", "ray tracing", "hdr", "4k", "120fps", "vr", "cloud gaming", "esports", "tournament", "prize pool", "twitch", "streamer", "youtube", "discord", "community", "reviews", "metacritic", "ign", "gamespot", "release date"],
+            finance: ["stock price", "share price", "market cap", "chart", "graph", "history", "forecast", "prediction", "target 2025", "buy or sell", "rating", "analyst", "news", "rumors", "earnings", "revenue", "profit", "quarterly report", "annual report", "balance sheet", "cash flow", "debt", "assets", "liabilities", "dividends", "yield", "payout date", "ex dividend", "stock split", "reverse split", "buyback", "ipo", "listing date", "subscription status", "gmp", "allotment", "competitors", "industry", "sector", "index", "sp500", "nasdaq", "dow jones", "nifty", "sensex", "crypto", "bitcoin", "ethereum", "altcoins", "bull run", "bear market", "crash", "recession", "inflation", "interest rates", "fed meeting", "taxes", "capital gains", "trading", "investing", "portfolio", "broker", "app", "fees", "charges", "account", "login", "password", "customer service", "scam", "fraud", "sec filing", "insider trading", "ceo", "founder", "owner", "headquarters", "locations", "employees", "salary", "jobs", "hiring", "careers"],
+            health: ["symptoms", "causes", "treatment", "cure", "medicine", "tablets", "syrup", "injection", "vaccine", "side effects", "dosage", "overdose", "precautions", "warnings", "interactions", "contraindications", "uses", "benefits", "risks", "diagnosis", "test", "scan", "xray", "mri", "blood test", "cost", "price", "insurance", "coverage", "hospital", "clinic", "doctor", "specialist", "surgeon", "appointment", "consultation", "online", "telehealth", "home remedy", "natural", "herbal", "ayurveda", "homeopathy", "yoga", "exercise", "diet", "nutrition", "food", "vitamins", "supplements", "protein", "calories", "weight loss", "weight gain", "bmi", "calculator", "chart", "guidelines", "protocol", "research", "study", "statistics", "news", "breakthrough", "pandemic", "virus", "bacteria", "infection", "pain", "relief", "recovery", "rehab", "therapy", "mental health", "anxiety", "depression", "stress", "sleep", "insomnia", "fatigue", "energy", "immunity", "heart", "liver", "kidney", "lungs", "brain", "skin", "hair"],
+            general: ["news", "latest", "update", "today", "live", "images", "photos", "wallpaper", "video", "youtube", "tiktok", "instagram", "facebook", "twitter", "reddit", "wiki", "biography", "age", "height", "net worth", "family", "wife", "husband", "children", "parents", "education", "career", "history", "facts", "trivia", "quiz", "meaning", "definition", "synonyms", "antonyms", "translate", "examples", "types", "list", "top 10", "best", "worst", "ranking", "comparison", "vs", "difference", "guide", "tutorial", "how to", "diy", "ideas", "inspiration", "design", "trends", "popular", "famous", "viral", "meme", "joke", "quotes", "lyrics", "song", "movie", "book", "game", "app", "website", "login", "signup", "contact", "address", "phone number", "email", "location", "map", "directions", "near me", "hours", "open now", "reviews", "ratings"]
+        };
+
+        const indianSuffixes = ["price in India", "in hindi", "news India", "release date India", "hindi dubbed", "box office collection India", "review by indian", "buy online India", "flipkart", "amazon india", "tata", "reliance", "jio", "cricket", "ipl", "bollywood", "tollywood", "bangalore", "delhi", "mumbai", "chennai"];
+
+        const params = new URLSearchParams(window.location.search);
+        
+        // Read Params
+        const currentCount = parseInt(params.get('c')) || 0;
         const limit = parseInt(params.get('l')) || 35;
-        const minDelay = parseInt(params.get('mi')) || 5; 
-        const maxDelay = parseInt(params.get('ma')) || 10;
+        const minDelay = parseInt(params.get('mi')) || 10;
+        const maxDelay = parseInt(params.get('ma')) || 20;
         
         const topicVal = params.get('t') || "";
         const catVal = params.get('cat') || "general";
         const isIndian = params.get('ind') === '1';
+        const useCustom = params.get('custom') === '1';
 
-        // Elements
+        // UI References
         const ui = {
             topic: document.getElementById('topic'),
+            custom: document.getElementById('custom-queries'),
             cat: document.getElementById('category'),
             limit: document.getElementById('limit'),
             min: document.getElementById('min'),
@@ -139,17 +315,25 @@
             progress: document.getElementById('progress'),
             typing: document.getElementById('typing-area'),
             start: document.getElementById('start-btn'),
-            stop: document.getElementById('stop-btn'),
             indianBtn: document.getElementById('indian-btn'),
             warning: document.getElementById('warning')
         };
 
         function generateQuery() {
+            if (useCustom) {
+                const storedQueries = localStorage.getItem('userQueries');
+                if (storedQueries) {
+                    const list = storedQueries.split(',').map(s => s.trim()).filter(s => s.length > 0);
+                    if (list.length > 0) return list[Math.floor(Math.random() * list.length)];
+                }
+            }
             const list = dictionary[catVal] || dictionary.general;
             let suffix = list[Math.floor(Math.random() * list.length)];
+            
             if (isIndian && Math.random() > 0.4) {
                 suffix = indianSuffixes[Math.floor(Math.random() * indianSuffixes.length)];
             }
+
             if (!topicVal) {
                 const randomTopics = ["Weather", "Tech", "Movies", "Crypto", "Health", "Sports"];
                 const rand = randomTopics[Math.floor(Math.random() * randomTopics.length)];
@@ -158,66 +342,63 @@
             return `${topicVal} ${suffix}`;
         }
 
-        // --- CORE EXECUTION ---
-        function runAutomation() {
-            // 1. Lock UI
-            ui.topic.value = topicVal; ui.cat.value = catVal;
-            ui.limit.value = limit; ui.min.value = minDelay; ui.max.value = maxDelay;
-            [ui.limit, ui.min, ui.max, ui.topic, ui.cat].forEach(e => e.disabled = true);
+        function runEngine() {
+            ui.topic.value = topicVal; 
+            ui.cat.value = catVal;
+            ui.limit.value = limit; 
+            ui.min.value = minDelay; 
+            ui.max.value = maxDelay;
+            
+            if (useCustom) ui.custom.value = localStorage.getItem('userQueries') || "";
+
+            [ui.limit, ui.min, ui.max, ui.topic, ui.cat, ui.custom].forEach(e => e.disabled = true);
             ui.start.style.display = 'none';
-            ui.stop.style.display = 'flex';
+            
             if(isIndian) {
                 ui.indianBtn.classList.add('active');
                 ui.indianBtn.innerHTML = `<img src="https://flagcdn.com/w40/in.png" style="height:12px"> INDIAN SEARCH MODE: ON`;
             }
 
-            // 2. Update Status
             ui.progress.style.width = `${(currentCount / limit) * 100}%`;
             
             if (currentCount >= limit) {
-                ui.status.innerText = "✅ TARGET COMPLETE";
+                ui.status.innerText = "✅ TARGET REACHED";
+                ui.typing.innerText = "Job Done.";
                 return;
             }
 
-            // 3. GENERATE & OPEN IMMEDIATELY (No Blocking Waits)
-            const query = generateQuery();
-            document.title = `(${currentCount}/${limit}) Running...`;
-            ui.typing.innerText = `Searching: ${query}`; // Instant visual
-
-            const tab = window.open(`https://www.bing.com/search?q=${encodeURIComponent(query)}`, '_blank');
+            const delaySeconds = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
             
+            const query = generateQuery();
+            document.title = `(${currentCount}/${limit}) Searching...`;
+            
+            const searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(query)}&setmkt=en-IN&PC=EMMX01&form=LWS002`;
+            
+            const tab = window.open(searchUrl, 'bing_bot_tab'); 
+
             if (!tab) {
-                ui.warning.style.display = "block";
-                ui.status.innerText = "❌ BLOCKED";
+                ui.warning.style.display = 'block';
+                ui.status.innerText = "❌ POPUP BLOCKED";
                 return;
             }
 
-            // 4. PRECISE TIMER (Date-Based for Accuracy)
-            // Calculate delay strictly between Min and Max
-            const delayMs = Math.floor(Math.random() * (maxDelay - minDelay + 1) + minDelay) * 1000;
-            const targetTime = Date.now() + delayMs;
+            let timeLeft = delaySeconds;
+            ui.status.innerText = `Searched: "${query}"`;
+            ui.typing.innerText = `Waiting ${timeLeft}s for next...`;
 
-            const interval = setInterval(() => {
-                const now = Date.now();
-                const remaining = Math.ceil((targetTime - now) / 1000);
+            const timer = setInterval(() => {
+                timeLeft--;
+                ui.typing.innerText = `Waiting ${timeLeft}s for next...`;
                 
-                ui.status.innerText = `Waiting ${remaining}s...`;
-
-                if (now >= targetTime) {
-                    clearInterval(interval);
-                    // RELOAD
-                    const nextUrl = `?run=1&c=${currentCount+1}&l=${limit}&mi=${minDelay}&ma=${maxDelay}&t=${encodeURIComponent(topicVal)}&cat=${catVal}&ind=${isIndian?'1':'0'}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    const customFlag = useCustom ? '1' : '0';
+                    const nextUrl = `?run=1&c=${currentCount+1}&l=${limit}&mi=${minDelay}&ma=${maxDelay}&t=${encodeURIComponent(topicVal)}&cat=${catVal}&ind=${isIndian?'1':'0'}&custom=${customFlag}`;
                     window.location.href = nextUrl;
                 }
-            }, 100); // Check every 100ms for responsiveness
+            }, 1000);
         }
 
-        // --- STARTUP ---
-        if (isRunning) {
-            runAutomation();
-        }
-
-        // --- HANDLERS ---
         ui.start.addEventListener('click', () => {
             const l = ui.limit.value;
             const mi = ui.min.value;
@@ -225,11 +406,18 @@
             const t = encodeURIComponent(ui.topic.value);
             const c = ui.cat.value;
             const i = ui.indianBtn.classList.contains('active') ? '1' : '0';
-            window.location.href = `?run=1&c=0&l=${l}&mi=${mi}&ma=${ma}&t=${t}&cat=${c}&ind=${i}`;
-        });
-
-        ui.stop.addEventListener('click', () => {
-            window.location.href = window.location.pathname;
+            
+            const customText = ui.custom.value.trim();
+            let customFlag = '0';
+            
+            if (customText.length > 0) {
+                localStorage.setItem('userQueries', customText);
+                customFlag = '1';
+            } else {
+                localStorage.removeItem('userQueries');
+            }
+            
+            window.location.href = `?run=1&c=0&l=${l}&mi=${mi}&ma=${ma}&t=${t}&cat=${c}&ind=${i}&custom=${customFlag}`;
         });
 
         ui.indianBtn.addEventListener('click', () => {
@@ -241,7 +429,6 @@
                 ui.indianBtn.innerHTML = `<img src="https://flagcdn.com/w40/in.png" style="height:12px"> INDIAN SEARCH MODE: ON`;
             }
         });
-
     </script>
 </body>
 </html>
