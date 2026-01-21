@@ -160,7 +160,7 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
         </div>
     </div>
 
-    <script>
+        <script>
         // ==========================================
         //  🔒 SECURITY & ADMIN CONFIGURATION
         // ==========================================
@@ -168,8 +168,7 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
         // 1. YOUR ADMIN PASSWORD (MUST MATCH ADMIN PANEL)
         const SECRET_PASS = "HARI_SUPER_SECRET_2026"; 
 
-        // 2. DAILY RESET SWITCH (CHANGE THIS TO RESET LOGINS)
-        // Example: Change "DEPLOY_01" to "DEPLOY_02" tomorrow.
+        // 2. DAILY RESET SWITCH
         const DEPLOYMENT_ID = "DEPLOY_01"; 
 
         // ==========================================
@@ -180,13 +179,11 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
         const loginBtn = document.querySelector('.login-btn');
 
         // --- AUTO-LOGIN CHECK ---
-        // Checks if user is already logged in for THIS specific Deployment ID
         window.onload = function() {
             const savedKey = localStorage.getItem("u_key");
             const savedDeploy = localStorage.getItem("u_deploy");
             
             if (savedKey && savedDeploy === DEPLOYMENT_ID) {
-                // Already Verified for this specific deployment
                 unlockApp(true);
             }
         };
@@ -204,15 +201,14 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
             loginBtn.style.opacity = "0.7";
 
             try {
-                // 1. DECODE KEY (Base64)
+                // 1. DECODE KEY
                 const decoded = atob(key); 
                 const parts = decoded.split('|'); 
-                // Expecting: [User, Limit, Expiry, Signature]
                 
                 if (parts.length !== 4) throw new Error("Invalid Key Format");
                 const [uid, devLimit, expiry, signature] = parts;
 
-                // 2. VERIFY MATH (SIGNATURE)
+                // 2. VERIFY SIGNATURE (MATH)
                 let hash = 0;
                 const stringToHash = `${uid}|${devLimit}|${expiry}` + SECRET_PASS;
                 for (let i = 0; i < stringToHash.length; i++) {
@@ -223,24 +219,30 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
 
                 if (hash != signature) throw new Error("Key Integrity Failed. (Fake Key)");
 
-                // 3. CHECK SUBSCRIPTION DATE
+                // 3. CHECK EXPIRY
                 if (Date.now() > parseInt(expiry)) throw new Error("Subscription Expired.");
 
-                // 4. CHECK PUBLIC DEVICE COUNTER (API)
+                // 4. CHECK DEVICE LIMIT (New Safer API)
                 loginStatus.innerText = "Checking Device Limit...";
                 
-                // Unique Counter ID = DeploymentID + UserID
-                // If you change DeploymentID, this ID changes, resetting the count.
-                const counterNamespace = "research_pro_auth_v1"; // Public Namespace
-                const counterKey = `${DEPLOYMENT_ID}_${uid}`;
+                // We use your DEPLOYMENT_ID + UID to make a unique counter
+                const counterName = `${DEPLOYMENT_ID}_${uid}`.replace(/[^a-zA-Z0-9]/g, ''); // Clean special chars
+                
+                // Using CounterAPI.dev (More reliable than CountAPI)
+                // We try to 'up' the count.
+                const response = await fetch(`https://api.counterapi.dev/v1/researchpro/${counterName}/up`);
+                
+                if (!response.ok) {
+                    // If 404, it means new user, retry creation or assume 0
+                    // But 'up' usually creates if missing.
+                    // If network fails here, it goes to catch block.
+                }
 
-                // Using countapi.xyz (Free Public Counter)
-                const response = await fetch(`https://api.countapi.xyz/hit/${counterNamespace}/${counterKey}`);
                 const data = await response.json();
-                const currentUsage = data.value;
+                const currentUsage = data.count; // CounterAPI returns 'count'
 
                 if (currentUsage > parseInt(devLimit)) {
-                    throw new Error(`Device Limit Reached! (${currentUsage}/${devLimit} devices used today)`);
+                    throw new Error(`Device Limit Reached! (${currentUsage}/${devLimit} devices used)`);
                 }
 
                 // 5. SUCCESS
@@ -253,8 +255,14 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
                 setTimeout(() => unlockApp(false), 1000);
 
             } catch (e) {
-                loginStatus.style.color = "#ff4444";
-                loginStatus.innerText = e.message;
+                // SPECIAL HANDLING FOR "FAILED TO FETCH"
+                if (e.message.includes("Failed to fetch")) {
+                    loginStatus.style.color = "yellow";
+                    loginStatus.innerText = "⚠️ Network Error: Please turn off AdBlocker or try a different internet connection.";
+                } else {
+                    loginStatus.style.color = "#ff4444";
+                    loginStatus.innerText = e.message;
+                }
                 loginBtn.disabled = false;
                 loginBtn.style.opacity = "1";
             }
@@ -265,9 +273,8 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
             loginScreen.style.opacity = "0";
             setTimeout(() => {
                 loginScreen.style.display = "none";
-                appContainer.style.display = "flex"; // Changed to flex to center it
+                appContainer.style.display = "flex"; 
                 
-                // Only run engine if param exists (Original Logic)
                 const params = new URLSearchParams(window.location.search);
                 if (params.get('run') === '1') {
                     runEngine();
@@ -276,9 +283,8 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
         }
 
         // ==========================================
-        //  YOUR ORIGINAL APP LOGIC (PRESERVED)
+        //  YOUR ORIGINAL APP LOGIC
         // ==========================================
-        
         const dictionary = {
             movies: ["trailer", "cast", "release date", "review", "ending explained", "box office", "rating", "wiki", "poster", "tickets", "director", "sequel", "behind the scenes", "interviews", "plot summary", "rotten tomatoes", "imdb rating", "metacritic", "full movie", "streaming", "netflix", "prime video", "hulu", "disney plus", "watch online", "download", "blu ray", "4k release", "soundtrack", "filming locations", "production budget", "fan theories", "easter eggs", "deleted scenes", "bloopers", "timeline", "canon", "characters", "villain", "hero", "best scenes", "quotes", "memes", "wallpaper", "merchandise", "action figure", "steelbook", "collector edition", "pre order", "showtimes", "near me", "imax", "3d glasses", "dolby cinema", "popcorn bucket", "runtime", "age rating", "parental guide", "awards", "oscars", "golden globes", "cannes", "premiere", "red carpet", "actor instagram", "actress interview", "cameos", "post credit scene", "mid credit scene", "is it worth watching", "spoiler free review", "reaction video", "analysis", "video essay", "script pdf", "concept art", "visual effects", "cgi breakdown", "stunts", "costume design", "makeup transformation", "box office flop", "blockbuster", "indie movie", "short film", "documentary", "biopic", "animated", "live action", "remake", "reboot", "spinoff", "crossover", "universe", "franchise", "trilogy", "saga", "anthology", "series", "season 2"],
             tech: ["specs", "price", "review", "vs iphone", "vs samsung", "battery life", "camera test", "release date", "unboxing", "features", "manual", "issues", "bugs", "glitch", "fix", "troubleshoot", "screen replacement", "battery replacement", "repair cost", "teardown", "durability test", "water test", "drop test", "bend test", "scratch test", "colors", "storage options", "ram", "processor", "benchmark", "antutu", "geekbench", "gaming test", "pubg test", "fps test", "overheating", "charging speed", "wireless charging", "fast charger", "cable", "case", "cover", "screen protector", "tempered glass", "skin", "accessories", "best buy", "amazon", "flipkart", "sale", "discount", "coupon", "black friday", "cyber monday", "student discount", "trade in", "exchange offer", "emi", "warranty", "customer care", "service center", "official website", "forum", "reddit", "xda", "drivers", "firmware", "update", "android 15", "ios 18", "windows 12", "macos", "linux", "ubuntu", "software", "hardware", "cpu", "gpu", "motherboard", "ssd", "hdd", "monitor", "keyboard", "mouse", "headset", "earbuds", "smartwatch", "fitness tracker", "router", "modem", "5g bands", "wifi 7", "bluetooth 6", "usb c", "thunderbolt"],
@@ -430,5 +436,6 @@ Example: Avatar 2, Best Pizza, Weather Today"></textarea>
             }
         });
     </script>
+
 </body>
 </html>
